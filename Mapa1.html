@@ -1,0 +1,77 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Cor Processu Mobile</title>
+<link href="ccs/jquery-mobile/jquery.mobile-1.0a3.min.css" rel="stylesheet" type="text/css">
+<script src="ccs/jquery-mobile/jquery-1.5.min.js" type="text/javascript"></script>
+<script src="ccs/jquery-mobile/jquery.mobile-1.0a3.min.js" type="text/javascript"></script>
+<script src="lib/funciones.js" type="text/javascript"></script>
+<script src="http://maps.google.com/maps?file=api&amp;v=2" type="text/javascript"></script>
+<script type="text/javascript">
+function initialize() {
+	var map = new GMap2(document.getElementById("map_canvas"));
+	map.addControl(new GSmallMapControl());
+	map.addControl(new GMapTypeControl());
+	map.setCenter(new GLatLng(10.496825268326187,-66.87972577794137), 15);     
+	
+	// Se especifican para todos los tipos su tamaño, sombra, etc.
+	var baseIcon = new GIcon(G_DEFAULT_ICON);
+	baseIcon.shadow = "http://www.google.com/mapfiles/shadow50.png";
+	baseIcon.iconSize = new GSize(22, 31);
+	baseIcon.shadowSize = new GSize(37, 34);
+	baseIcon.iconAnchor = new GPoint(9, 34);
+	baseIcon.infoWindowAnchor = new GPoint(2, 2);
+	
+	// Se crea el marker mostrando en su ventana la informacion del parámetro texto
+	function createMarker(point, texto, tipo) {
+	  // Se crea el icono, y dependiendo del tipo, se le asigna una imagen
+	  var letteredIcon = new GIcon(G_DEFAULT_ICON);
+	  if (tipo == 1) {
+		  // Kiosco
+		  letteredIcon.image = "images/shop.ico";
+	  } else if (tipo == 2) {
+		  // Oficina
+		  letteredIcon.image = "images/office.ico";
+	  }
+	
+	  // Se establecen las opciones del marker
+	  markerOptions = { icon:letteredIcon };
+	  var marker = new GMarker(point, markerOptions);
+	
+	  GEvent.addListener(marker, "click", function() {
+		marker.openInfoWindowHtml(texto);
+	  });
+	  return marker;
+	}
+	
+	// Se agragan en el mapa los markers correspondientes a los puntos almacenados en BD
+	$.getJSON("http://nube4u.com/sid_servicios/json/demo_mobile/ObtenerUbicacion.php?jsoncallback=?", function(data) {
+		$.each(data, function(i, item) {
+	  		var point = new GLatLng(item.latitud, item.longitud);
+	  		map.addOverlay(createMarker(point, ("ID: " + item.id), item.tipo));
+	  	});
+	});
+	
+}
+</script>
+</head>
+
+<body onload="initialize()" onunload="GUnload()">
+<div data-role="page" id="page">
+  <div data-role="header" data-theme="b">
+		<h1>Consulta de Ubicaciones</h1>
+        <div data-role="navbar" data-iconpos="top">
+         <ul>
+           	<li><a onClick="redireccionar('Geolocalizacion.html')">Regresar</a></li>
+            <li><a onClick="sid()">SID, C.A.</a></li>
+            <li><a onClick="salir()">Salir</a></li>
+         </ul>
+      </div>
+	</div>
+  <div data-role="content">
+  	<div id="map_canvas" style="width: 500px; height: 300px"></div>
+  </div>
+</div>
+</body>
+</html>
